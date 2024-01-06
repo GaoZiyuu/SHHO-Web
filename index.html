@@ -69,9 +69,21 @@
     <div class="container-fluid">
         <div class="col-sm-12">
             <div class="well">
-                <h1 style="text-align: center;">Feedbacks Dashboard</h1>
+                <h1 style="text-align: center; margin: 0;">Feedbacks Dashboard</h1>
             </div>
             <div class="row">
+                <div class="col-sm-6">
+                    <div class="well">
+                        <h3 style="text-align: center;">Checkpoint Distribution</h3>
+                        <canvas id="checkpointChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="well">
+                        <h3 style="text-align: center;">Time Taken Distribution</h3>
+                        <canvas id="timetakenChart"></canvas>
+                    </div>
+                </div>
                 <div class="col-sm-3">
                     <div class="well">
                         <h3 style="text-align: center;">Gender Distribution</h3>
@@ -86,24 +98,17 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="well">
-                        <h3 style="text-align: center;">Checkpoint Distribution</h3>
-                        <canvas id="checkpointChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="well">
                         <table style="width: 100%;">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <!-- <th>ID</th> -->
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Age</th>
                                     <th>Gender</th>
                                     <th>Checkpoint Completed</th>
                                     <th>Feedback</th>
+                                    <th>Time Taken</th>
                                 </tr>
                             </thead>
                             <tbody id="feedbackTable">
@@ -153,12 +158,13 @@
         //     gender: "Male",
         //     age: "43",
         //     checkpoint_completed: "3",
-        //     feedback: "I like this app"
+        //     feedback: "I like this app",
+        //     time_taken: "10"
         // };
 
-        // set(ref(db, 'feedbacks/0003'), feedbackData);
+        // set(ref(db, 'submissions/xdfsfsfsfs'), feedbackData);
 
-        onValue(ref(db, 'feedbacks'), (snapshot) => {
+        onValue(ref(db, 'submissions'), (snapshot) => {
             const data = snapshot.val();
             var feedbacks = data;
 
@@ -173,10 +179,12 @@
                 var gender = feedbacks[id].gender
                 var age = feedbacks[id].age
                 var checkpoint_completed = feedbacks[id].checkpoint_completed
-                var feedback = feedbacks[id].feedback
+                var feedback = feedbacks[id].message
+                var time_taken = feedbacks[id].time_taken
 
-                table.innerHTML += "<tr><td>" + id + "</td><td>" + name + "</td><td>"
-                    + email + "</td><td>" + age + "</td><td>" + gender + "</td><td>" + checkpoint_completed + "</td><td>" + feedback + "</td></tr>"
+                table.innerHTML += "<tr><td>" + name + "</td><td>"
+                    + email + "</td><td>" + age + "</td><td>" + gender + "</td><td>"
+                        + checkpoint_completed + "</td><td>" + feedback + "</td><td>" + time_taken + "</td></tr>"
             }
 
             // pie chart for gender
@@ -274,7 +282,7 @@
                 data: {
                     labels: [1, 2, 3],
                     datasets: [{
-                        label: '# of Votes',
+                        label: '# of Completed Checkpoints',
                         data: checkpoints,
                         borderWidth: 1
                     }]
@@ -288,6 +296,49 @@
                 }
             });
 
+            // time taken distribution
+            var time_taken_labels = ['< 1m', '1m-1.5m', '1.5m-2m', '2m-2.5m', '2.5m-3m', '>3']
+            var time_taken_groups = [0, 0, 0, 0, 0, 0]
+
+            for (let id in feedbacks) {
+                if (feedbacks[id].time_taken < 60) {
+                    time_taken_groups[0] += 1
+                }
+                else if (feedbacks[id].time_taken >= 60 && feedbacks[id].time_taken <= 90) {
+                    time_taken_groups[1] += 1
+                }
+                else if (feedbacks[id].time_taken >= 90 && feedbacks[id].time_taken <= 120) {
+                    time_taken_groups[2] += 1
+                }
+                else if (feedbacks[id].time_taken >= 120 && feedbacks[id].time_taken <= 150) {
+                    time_taken_groups[3] += 1
+                }
+                else if (feedbacks[id].time_taken >= 150 && feedbacks[id].time_taken <= 180) {
+                    time_taken_groups[4] += 1
+                }
+                else if (feedbacks[id].time_taken > 180) {
+                    time_taken_groups[5] += 1
+                }
+            }
+
+            new Chart(document.getElementById('timetakenChart'), {
+                type: 'bar',
+                data: {
+                    labels: time_taken_labels,
+                    datasets: [{
+                        label: '# of Completed Checkpoints',
+                        data: time_taken_groups,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
         });
     </script>
 </body>
